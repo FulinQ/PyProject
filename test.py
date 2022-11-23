@@ -51,7 +51,7 @@ class pr_Database:
 
 pr_database = pr_Database()
 os.chdir('/Users/fulinq/Documents/KMITL/Y1/T1/IntroToProgramming/PyProject')
-fi = open('product.txt', 'r')
+fi = open('product_test.txt', 'r')
 pr_count = 1
 while True:
     lines = fi.readline()
