@@ -48,10 +48,10 @@ class pr_Database:
 #     return 'Error: Negative amount in stock'
 #   elif len(pr_database) > 0:
 #     for 
-
+pr_dict ={}
 pr_database = pr_Database()
 os.chdir('/Users/fulinq/Documents/KMITL/Y1/T1/IntroToProgramming/PyProject')
-fi = open('product_test.txt', 'r')
+fi = open('product.txt', 'r')
 pr_count = 1
 while True:
     lines = fi.readline()
@@ -66,9 +66,23 @@ while True:
         stock = int(pr_data[4])
         product = Product(id, name, cost, price, stock)
         pr_database.add(product)
+        pr_item = {}
+        pr_item['id'] = id
+        pr_item['name'] = name
+        pr_item['cost'] = cost
+        pr_item['price'] = price
+        pr_item['stock'] = stock
+        pr_dict[pr_count] = pr_item
         pr_count += 1
 
-print(pr_database)
+'''Check that dictionary is working'''
+# for i in range(1, pr_count):
+#   print(pr_dict[i])
+
+# pr_dict[1]['stock'] = 4
+
+# for i in range(1, pr_count):
+#   print(pr_dict[i])
 
 while True:
     command = input()
@@ -89,3 +103,4 @@ while True:
             print(product.get_available(), 'in stock')
         else:
             print('Invalid product ID')
+      
