@@ -1,4 +1,6 @@
 import os
+from datetime import date
+
 class Product:
   def __init__(self, pr_id, pr_name, pr_cost, pr_price, pr_stock):
     self.pr_id = pr_id
@@ -41,14 +43,12 @@ class pr_Database:
     print("Product not found")
     return None
 
-# def total_stock():
-#   if len(pr_database) == 0:
-#     return 0
-#   elif len(pr_database) < 0:
-#     return 'Error: Negative amount in stock'
-#   elif len(pr_database) > 0:
-#     for 
+class Sale(Product):
+  def __init__(self, pr_id, pr_name, pr_cost, pr_price, pr_stock, customer):
+     super().__init__(pr_id, pr_name, pr_cost, pr_price, pr_stock)
 
+pr_dict = {}
+customer = {}
 pr_database = pr_Database()
 os.chdir('/Users/fulinq/Documents/KMITL/Y1/T1/IntroToProgramming/PyProject')
 fi = open('product.txt', 'r')
@@ -66,9 +66,24 @@ while True:
         stock = int(pr_data[4])
         product = Product(id, name, cost, price, stock)
         pr_database.add(product)
+        pr_item = {}
+        pr_item['id'] = id
+        pr_item['name'] = name
+        pr_item['cost'] = cost
+        pr_item['price'] = price
+        pr_item['stock'] = stock
+        pr_dict[pr_count] = pr_item
         pr_count += 1
+    fi.close()
 
-print(pr_database)
+'''Check that dictionary is working'''
+# for i in range(1, pr_count):
+#   print(pr_dict[i])
+
+# pr_dict[1]['stock'] = 4
+
+# for i in range(1, pr_count):
+#   print(pr_dict[i])
 
 while True:
     command = input()
