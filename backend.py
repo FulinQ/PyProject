@@ -16,7 +16,7 @@ class Product:
     self.pr_stock += amount
     # save the adding history
 
-  def min_stock(self, amount):
+  def de_stock(self, amount):
     if self.pr_stock > amount:
       self.pr_stock -= amount
     else:
@@ -42,10 +42,6 @@ class pr_Database:
         return pr
     print("Product not found")
     return None
-
-class Sale(Product):
-  def __init__(self, pr_id, pr_name, pr_cost, pr_price, pr_stock, customer):
-     super().__init__(pr_id, pr_name, pr_cost, pr_price, pr_stock)
 
 
 pr_dict = {}
@@ -103,9 +99,10 @@ try:
         cus_count += 1
 except:
   print('Customer\'s Data Error')
+fi.close()
 
 print(date.today())
-print(customer)
+# print(customer)
 # """ Check that dictionary is working """
 
 # for i in range(1, pr_count):
@@ -116,27 +113,120 @@ print(customer)
 # for i in range(1, pr_count):
 #   print(pr_dict[i])
 
-# while True:
-#   command = input()
-#   #Quit command
-#   if command == 'q':
-#     break
-#   #Find the available stocks with product's id
-#   elif command == 'sid':
-#     product = pr_database.findid_pr(int(input()))
-#     if product is not None:
-#       print(product.get_available(), 'in stock')
-#     else:
-#       print('Invalid product ID')
-#   #Find the available stocks with product's id
-#   elif command == 'sna':
-#     product = pr_database.findna_pr(input())
-#     if product is not None:
-#       print(product.get_available(), 'in stock')
-#     else:
-#       print('Invalid product ID')
+while True:
+  print()
+  command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name : \nsale : create order \n')
+  #Quit command
+  if command == 'q':
+    break
+  #Find the available stocks with product's id
+  elif command == 'sid':
+    product = pr_database.findid_pr(int(input()))
+    if product is not None:
+      print(product.pr_name, product.get_available(), 'in stock')
+    else:
+      print('Invalid product ID')
+  #Find the available stocks with product's id
+  elif command == 'sna':
+    product = pr_database.findna_pr(input())
+    if product is not None:
+      print(product.pr_name, product.get_available(), 'in stock')
+    else:
+      print('Invalid product ID')
 #   #Sale function
-#   elif command == 'sale':
-#     cus = input('Customer name :')
-#     cus = cus.upper()
-      
+  elif command == 'sale':
+    order = []
+    cus = str(input('Customer name : '))
+    cus = cus.upper()
+    while True:
+      sum = 0
+      if len(order) == 0:
+        print('No product in your basket')
+      else:
+        print('Your order : ', len(order))
+        for i in order:
+          product_o = pr_database.findna_pr(i[0])
+          print(product_o.pr_name, end = ' ')
+          print(i[1], end = ' ')
+          print(product_o.pr_price*i[1], 'Baht')
+          sum += product_o.pr_price*i[1]
+          print('Total :', sum)
+        print()
+      o_pr = input('Enter product id : ')
+
+      if o_pr == 'finish':
+        print()
+        print('Final Bill :', cus)
+        for i in order:
+          product_o = pr_database.findna_pr(i[0])
+          print(product_o.pr_name, end = ' ')
+          print(i[1], end = ' ')
+          print(product_o.pr_price*i[1], 'Baht')
+        revenue = sum
+        print('Total :', sum)
+        cash = int(input('Enter cash : '))
+        print('Customer pays ;', cash, 'Baht')
+        change = cash - sum
+        print('Change :', change)
+        profit = 0
+        cost = 0
+        for i in order:
+          # print(i)
+          product = pr_database.findna_pr(i[0])
+          if product is not None:
+            product.de_stock(int(i[1]))
+            pi = product.pr_price - product.pr_cost
+            pi *= int(i[1])
+            cost = product.pr_cost*int(i[1])
+            profit += pi
+        print('Profit :', profit)
+        name = cus
+        print(customer['QQ'])
+        customer[name] = customer.get(name,0) + 1
+        print(customer['QQ'])
+        fi = open('sale_history.txt', 'a')
+        x = date.today()
+        data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+ str(revenue)+' '+str(cost)+' '+str(profit)+'\n'
+        print(data)
+        fi.write(data)
+        fi.close()
+        break
+
+      elif o_pr == 'claer':
+        order = []
+        break
+      try: 
+        product = pr_database.findid_pr(int(o_pr))
+        if product is not None:
+          s = None
+          id_o = None
+          for i in range(1,pr_count):
+            if pr_dict[i]['id'] == product.pr_id:
+              a = pr_dict[i]['stock']
+              s = a
+              id_o = i
+              break
+            else:
+              continue
+          print(product.pr_name, s, 'in stock')
+          try:
+            o_qu = int(input('Enter quantity : '))
+          except:
+            print('Quantity must be an integer. Please enter product ID again.')
+            continue
+          if o_qu < s:
+            list_o = [product.pr_name, o_qu]
+            # print(pr_dict[id_o]['stock'])
+            pr_dict[id_o]['stock'] = s - o_qu
+            # print(pr_dict[id_o]['stock'])
+            order.append(list_o)
+            continue
+          elif o_qu <= 0:
+            print('Error: quantity cannot be zero or negative number. Enter product ID again')            
+            continue
+          else:
+            print('Error enter product ID again')
+            continue
+      except:
+        print('Error: Enter product ID again.')
+        continue
