@@ -1,6 +1,6 @@
-AjanSun 0
+AJANSUN 0
 QQ 1
-TangTang 20
-TenTen 3
-KeyKey 4
-DoDo 8
+TANGTANG 20
+TENTEN 3
+KEYKEY 4
+DODO 8

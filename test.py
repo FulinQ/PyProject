@@ -74,7 +74,7 @@ while True:
         pr_item['stock'] = stock
         pr_dict[pr_count] = pr_item
         pr_count += 1
-    fi.close()
+fi.close()
 
 '''Check that dictionary is working'''
 # for i in range(1, pr_count):
