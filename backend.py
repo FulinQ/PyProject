@@ -126,6 +126,15 @@ while True:
       fi.write(str(pr_dict[i]['stock'])+'\n')
     fi.close()
 
+    fi = open('customer.txt', 'w')
+    customer = sorted(customer.items())
+    for i in customer:
+      data = str(i[0]) + ' '
+      fi.write(data)
+      data = str(i[1]) + '\n'
+      fi.write(data)
+    fi.close()
+
     # fi.open('customer.txt', 'w')
     # for i in customer:
     #   i....
@@ -167,83 +176,85 @@ while True:
       o_pr = input('Enter product id : ')
 
       if o_pr == 'finish':
-        print()
-        print('Final Bill :', cus)
-        for i in order:
-          product_o = pr_database.findna_pr(i[0])
-          print(product_o.pr_name, end = ' ')
-          print(i[1], end = ' ')
-          print(product_o.pr_price*i[1], 'Baht')
-        revenue = sum
-        print('Total :', sum)
-        cash = int(input('Enter cash : '))
-        print('Customer pays :', cash, 'Baht')
-        change = cash - sum
-        print('Change :', change)
-        profit = 0
-        cost = 0
-        x = date.today()
-        fi = open('sold.txt', 'a')
-        for i in order:
-          # print(i)
-          product = pr_database.findna_pr(i[0])
-          if product is not None:
-            product.de_stock(int(i[1]))
-            pi = product.pr_price - product.pr_cost
-            pi *= int(i[1])
-            cost = product.pr_cost*int(i[1])
-            profit += pi
-            data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(product.pr_name)+' '+str(i[1])+'\n'
-            fi.write(data)
-        fi.close()
-        print('Profit :', profit)
-        name = cus
-        customer[name] = customer.get(name,0) + 1
-        fi = open('sale_history.txt', 'a')
-        data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+ str(revenue)+' '+str(cost)+' '+str(profit)+'\n'
-        # print(data)
-        fi.write(data)
-        fi.close()
-        break
-
-      elif o_pr == 'claer':
-        order = []
-        break
-      try: 
-        product = pr_database.findid_pr(int(o_pr))
-        if product is not None:
-          s = None
-          id_o = None
-          for i in range(1,pr_count):
-            if pr_dict[i]['id'] == product.pr_id:
-              a = pr_dict[i]['stock']
-              s = a
-              id_o = i
-              break
-            else:
-              continue
-          print(product.pr_name, s, 'in stock')
-          try:
-            o_qu = int(input('Enter quantity : '))
-          except:
-            print('Quantity must be an integer. Please enter product ID again.')
-            continue
-          if o_qu < s:
-            list_o = [product.pr_name, o_qu]
-            # print(pr_dict[id_o]['stock'])
-            pr_dict[id_o]['stock'] = s - o_qu
-            # print(pr_dict[id_o]['stock'])
-            order.append(list_o)
-            continue
-          elif o_qu <= 0:
-            print('Error: quantity cannot be zero or negative number. Enter product ID again')            
+        while True:
+          print()
+          print('Final Bill :', cus)
+          for i in order:
+            product_o = pr_database.findna_pr(i[0])
+            print(product_o.pr_name, end = ' ')
+            print(i[1], end = ' ')
+            print(product_o.pr_price*i[1], 'Baht')
+          revenue = sum
+          print('Total :', sum)
+          cash = int(input('Enter cash : '))
+          if cash < revenue:
+            print('Must pay more than the total price.')
             continue
           else:
-            print('Error enter product ID again')
-            continue
-      except:
-        print('Error: Enter product ID again.')
-        continue
+            print('Customer pays :', cash, 'Baht')
+            change = cash - sum
+            print('Change :', change)
+            profit = 0
+            cost = 0
+            x = date.today()
+            fi = open('sold.txt', 'a')
+            for i in order:
+              # print(i)
+              product = pr_database.findna_pr(i[0])
+              if product is not None:
+                product.de_stock(int(i[1]))
+                pi = product.pr_price - product.pr_cost
+                pi *= int(i[1])
+                cost = product.pr_cost*int(i[1])
+                profit += pi
+                data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+str(product.pr_name)+' '+str(i[1])+' '+str(cost)+' '+str(pi)+' '+'\n'
+                fi.write(data)
+            fi.close()
+            print('Profit :', profit)
+            order = []
+            name = cus
+            customer[name] = customer.get(name,0) + 1
+            break
+
+      elif o_pr == 'clear':
+        order = []
+        break
+      else:
+        try: 
+          product = pr_database.findid_pr(int(o_pr))
+          if product is not None:
+            s = None
+            id_o = None
+            for i in range(1,pr_count):
+              if pr_dict[i]['id'] == product.pr_id:
+                a = pr_dict[i]['stock']
+                s = a
+                id_o = i
+                break
+              else:
+                continue
+            print(product.pr_name, s, 'in stock')
+            try:
+              o_qu = int(input('Enter quantity : '))
+            except:
+              print('Quantity must be an integer. Please enter product ID again.')
+              continue
+            if o_qu < s:
+              list_o = [product.pr_name, o_qu]
+              # print(pr_dict[id_o]['stock'])
+              pr_dict[id_o]['stock'] = s - o_qu
+              # print(pr_dict[id_o]['stock'])
+              order.append(list_o)
+              continue
+            elif o_qu <= 0:
+              print('Error: quantity cannot be zero or negative number. Enter product ID again')            
+              continue
+            else:
+              print('Error enter product ID again')
+              continue
+        except:
+          print('Error: Enter product ID again.')
+          continue
 #add stock
   elif command == 'add':
     i_pr = (int(input('Enter product ID : ')))
