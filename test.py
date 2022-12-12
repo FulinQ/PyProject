@@ -81,7 +81,6 @@ except:
 fi.close()
 
 
-os.chdir('/Users/fulinq/Documents/KMITL/Y1/T1/IntroToProgramming/PyProject/')
 customer = {}
 try:
   fi = open('customer.txt', 'r')
@@ -116,24 +115,37 @@ print(date.today())
 while True:
   print()
   command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name : \nsale : create order \n')
-  #Quit command
+#Quit command
   if command == 'q':
+    fi = open('product.txt', 'w')
+    for i in range(1, pr_count):
+      fi.write(str(pr_dict[i]['id'])+' ')
+      fi.write(str(pr_dict[i]['name'])+' ')
+      fi.write(str(pr_dict[i]['cost'])+' ')
+      fi.write(str(pr_dict[i]['price'])+' ')
+      fi.write(str(pr_dict[i]['stock'])+'\n')
+    fi.close()
+
+    # fi.open('customer.txt', 'w')
+    # for i in customer:
+    #   i....
+    print('Data saved')
     break
-  #Find the available stocks with product's id
+#Find the available stocks with product's id
   elif command == 'sid':
     product = pr_database.findid_pr(int(input()))
     if product is not None:
       print(product.pr_name, product.get_available(), 'in stock')
     else:
       print('Invalid product ID')
-  #Find the available stocks with product's id
+#Find the available stocks with product's id
   elif command == 'sna':
     product = pr_database.findna_pr(input())
     if product is not None:
       print(product.pr_name, product.get_available(), 'in stock')
     else:
       print('Invalid product ID')
-#   #Sale function
+#Sale function
   elif command == 'sale':
     order = []
     cus = str(input('Customer name : '))
@@ -165,11 +177,13 @@ while True:
         revenue = sum
         print('Total :', sum)
         cash = int(input('Enter cash : '))
-        print('Customer pays ;', cash, 'Baht')
+        print('Customer pays :', cash, 'Baht')
         change = cash - sum
         print('Change :', change)
         profit = 0
         cost = 0
+        x = date.today()
+        fi = open('sold.txt', 'a')
         for i in order:
           # print(i)
           product = pr_database.findna_pr(i[0])
@@ -179,15 +193,15 @@ while True:
             pi *= int(i[1])
             cost = product.pr_cost*int(i[1])
             profit += pi
+            data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(product.pr_name)+' '+str(i[1])+'\n'
+            fi.write(data)
+        fi.close()
         print('Profit :', profit)
         name = cus
-        print(customer['QQ'])
         customer[name] = customer.get(name,0) + 1
-        print(customer['QQ'])
         fi = open('sale_history.txt', 'a')
-        x = date.today()
         data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+ str(revenue)+' '+str(cost)+' '+str(profit)+'\n'
-        print(data)
+        # print(data)
         fi.write(data)
         fi.close()
         break
@@ -230,3 +244,55 @@ while True:
       except:
         print('Error: Enter product ID again.')
         continue
+#add stock
+  elif command == 'add':
+    i_pr = (int(input('Enter product ID : ')))
+    product = pr_database.findid_pr(i_pr)
+    fi = open('supply_up.txt', 'a')
+    x = date.today()
+    if product is not None:
+      print('Now, there are', product.get_available(),product.pr_name , 'in stock')
+      amount = int(input('Adding amount : '))
+      product.add_stock(amount)
+      for i in range(1, pr_count):
+        if pr_dict[i]['id'] == product.pr_id:
+          pr_dict[i]['stock'] += amount
+          cost = pr_dict[i]['cost']*amount
+          data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(pr_dict[i]['id'])+' '+ str(pr_dict[i]['name'])+' '+str(cost)+'\n'
+          fi.write(data)
+          fi.close()
+          break
+        else: 
+          continue
+    else:
+      print('Product not found. New product?(y/n)')
+      yn = input()
+      if yn == 'n':
+        fi.close()
+        print('Quit adding stock command')
+      elif yn == 'y':
+        print()
+        print('Please product\'s data')
+        id = int(input('Enter Product ID : '))
+        name = input('Enter Product Name : ')
+        cost = int(input('Enter Product Cost : '))
+        price = int(input('Enter Product Price : '))
+        stock = int(input('Enter Product Stock : '))
+        product = Product(id, name, cost, price, stock)
+        pr_database.add(product)
+        pr_item = {}
+        pr_item['id'] = id
+        pr_item['name'] = name
+        pr_item['cost'] = cost
+        pr_item['price'] = price
+        pr_item['stock'] = stock
+        pr_dict[pr_count] = pr_item
+        pr_count += 1
+        cost = cost*stock
+        data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(id)+' '+ str(name)+' '+str(cost)+'\n'
+        fi.write(data)
+        fi.close()
+      else:
+        fi.close()
+        print('Input is not match, return to Home.')
+    
