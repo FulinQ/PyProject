@@ -1,5 +1,6 @@
 import os
 from datetime import date
+import matplotlib.pyplot as mp
 
 class Product:
   def __init__(self, pr_id, pr_name, pr_cost, pr_price, pr_stock):
@@ -100,7 +101,30 @@ except:
   print('Customer\'s Data Error')
 fi.close()
 
-print(date.today())
+def consumer_update():
+  global customer
+  fi = open('customer.txt', 'w')
+  cu = sorted(customer.items())
+  for i in cu:
+    data = str(i[0]) + ' '
+    fi.write(data)
+    data = str(i[1]) + '\n'
+    fi.write(data)
+  fi.close()
+
+def product_update():
+  global pr_dict
+  fi = open('product.txt', 'w')
+  for i in range(1, pr_count):
+    fi.write(str(pr_dict[i]['id'])+' ')
+    fi.write(str(pr_dict[i]['name'])+' ')
+    fi.write(str(pr_dict[i]['cost'])+' ')
+    fi.write(str(pr_dict[i]['price'])+' ')
+    fi.write(str(pr_dict[i]['stock'])+'\n')
+  fi.close()
+
+
+print('\nToday\'s date :', date.today())
 # print(customer)
 # """ Check that dictionary is working """
 
@@ -114,30 +138,11 @@ print(date.today())
 
 while True:
   print()
-  command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name : \nsale : create order \n')
+  command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name\nadd : add product\'s stock\nsale : create order \n')
 #Quit command
   if command == 'q':
-    fi = open('product.txt', 'w')
-    for i in range(1, pr_count):
-      fi.write(str(pr_dict[i]['id'])+' ')
-      fi.write(str(pr_dict[i]['name'])+' ')
-      fi.write(str(pr_dict[i]['cost'])+' ')
-      fi.write(str(pr_dict[i]['price'])+' ')
-      fi.write(str(pr_dict[i]['stock'])+'\n')
-    fi.close()
-
-    fi = open('customer.txt', 'w')
-    customer = sorted(customer.items())
-    for i in customer:
-      data = str(i[0]) + ' '
-      fi.write(data)
-      data = str(i[1]) + '\n'
-      fi.write(data)
-    fi.close()
-
-    # fi.open('customer.txt', 'w')
-    # for i in customer:
-    #   i....
+    product_update()
+    consumer_update()
     print('Data saved')
     break
 #Find the available stocks with product's id
@@ -211,9 +216,16 @@ while True:
                 fi.write(data)
             fi.close()
             print('Profit :', profit)
+
+            fi = open('basket.txt', 'a')
+            data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+str(len(order))+'\n'
+            fi.write(data)
+            fi.close()
+            product_update()
             order = []
             name = cus
             customer[name] = customer.get(name,0) + 1
+            consumer_update()
             break
 
       elif o_pr == 'clear':
@@ -239,7 +251,7 @@ while True:
             except:
               print('Quantity must be an integer. Please enter product ID again.')
               continue
-            if o_qu < s:
+            if o_qu <= s:
               list_o = [product.pr_name, o_qu]
               # print(pr_dict[id_o]['stock'])
               pr_dict[id_o]['stock'] = s - o_qu
@@ -250,7 +262,7 @@ while True:
               print('Error: quantity cannot be zero or negative number. Enter product ID again')            
               continue
             else:
-              print('Error enter product ID again')
+              print('Error: enter product ID again')
               continue
         except:
           print('Error: Enter product ID again.')
@@ -263,7 +275,11 @@ while True:
     x = date.today()
     if product is not None:
       print('Now, there are', product.get_available(),product.pr_name , 'in stock')
-      amount = int(input('Adding amount : '))
+      try:
+        amount = int(input('Adding amount : '))
+      except:
+        print('Error: amount should be an integer. Pease try again.')
+        continue
       product.add_stock(amount)
       for i in range(1, pr_count):
         if pr_dict[i]['id'] == product.pr_id:
@@ -272,6 +288,7 @@ while True:
           data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(pr_dict[i]['id'])+' '+ str(pr_dict[i]['name'])+' '+str(cost)+'\n'
           fi.write(data)
           fi.close()
+          product_update()
           break
         else: 
           continue
@@ -299,6 +316,7 @@ while True:
         pr_item['stock'] = stock
         pr_dict[pr_count] = pr_item
         pr_count += 1
+        product_update()
         cost = cost*stock
         data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(id)+' '+ str(name)+' '+str(cost)+'\n'
         fi.write(data)
@@ -306,4 +324,3 @@ while True:
       else:
         fi.close()
         print('Input is not match, return to Home.')
-    
