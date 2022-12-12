@@ -1,5 +1,7 @@
 import os
 from datetime import date
+import numpy as np
+import matplotlib.pyplot as mp
 
 class Product:
   def __init__(self, pr_id, pr_name, pr_cost, pr_price, pr_stock):
@@ -103,8 +105,8 @@ fi.close()
 def consumer_update():
   global customer
   fi = open('customer.txt', 'w')
-  customer = sorted(customer.items())
-  for i in customer:
+  cu = sorted(customer.items())
+  for i in cu:
     data = str(i[0]) + ' '
     fi.write(data)
     data = str(i[1]) + '\n'
@@ -121,6 +123,7 @@ def product_update():
     fi.write(str(pr_dict[i]['price'])+' ')
     fi.write(str(pr_dict[i]['stock'])+'\n')
   fi.close()
+
 
 print('\nToday\'s date :', date.today())
 # print(customer)
@@ -219,13 +222,11 @@ while True:
             data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+str(len(order))+'\n'
             fi.write(data)
             fi.close()
-            
             product_update()
-            consumer_update()
-
             order = []
             name = cus
             customer[name] = customer.get(name,0) + 1
+            consumer_update()
             break
 
       elif o_pr == 'clear':
@@ -324,4 +325,101 @@ while True:
       else:
         fi.close()
         print('Input is not match, return to Home.')
-    
+#graph
+  elif command == 'rgraph':
+    x = date.today()
+    mon = {'01':32, '02':29, '03':32, '04':31, '05':32, '06':31, '07':32, '08':32, '09':31, '10':32, '11':31, '12':32}
+    rev = {}
+    co = {}
+    prof = {}
+    print()
+    while True:
+      y = input('Enter year : ')
+      print(int(x.year))
+      if y == 'q':
+        y = None
+        break
+      try:
+        y = int(y)
+      except:
+        print('Year must be 4 digit integer')
+        continue
+      if 2022 <= y <= int(x.year):
+        y = str(y)
+        break
+      else:
+        print('Year must be at least 2022.')
+        y = None
+        continue
+    if y == None:
+      break
+    while True:
+      m = input('Enter month : ')
+      if m == 'q':
+        m = None
+        break
+      else:
+        if m in mon:
+          m = str(m)
+          break
+        else:
+          continue
+    if m == None:
+      break
+    k = mon[m]
+    one = []
+    for i in range(1,k):
+      j = str(i)
+      if len(j) == 1:
+        j = str(0)+j
+      else:
+        j = str(j)
+      rev[j] = rev.get(j, 0)
+      co[j] = co.get(j, 0)
+      prof[j] = prof.get(j, 0)
+      d_one = i
+      one.append(d_one)
+    fi = open('sold.txt', 'r')
+    print('Year :',y ,', Month :',m)
+    while True:
+      line = fi.readline()
+      if line == '':
+        break
+      else:
+        line = line.strip()
+        line = line.split()
+        if line[0] == y and line[1] == m:
+          d = line[2]
+          # print(d)
+          p = int(line[-1])
+          c = int(line[-2])
+          r = p+c
+          rev[d] = rev.get(d, 0) + r
+          co[d] = co.get(d, 0) + c
+          prof[d] = prof.get(d, 0) +p
+        else:
+          continue
+    # print(rev)
+    # print(co)
+    # print(prof)
+    rl = list(rev.values())
+    cl = list(co.values())
+    pl = list(prof.values())
+    # print(rl)
+    # print(cl)
+    # print(pl)
+    # print(one)
+    mp.figure(figsize = (20,6))
+    mp.axes(xticks=one)
+    oa = np.array(one)
+    ra = np.array(rl)
+    ca = np.array(cl)
+    pa = np.array(pl)
+    mp.bar(oa-0.2,ca,width=0.2,label='cost',align='center')
+    mp.bar(oa,ra,width=0.2,label='revenue',align='center')
+    mp.bar(oa+0.2,pa,width=0.2,label='profit',align='center')
+    mp.title('dashboard')
+    mp.ylabel('Baht')
+    mp.xlabel('Date')
+    mp.legend(loc='best')
+    mp.show()
