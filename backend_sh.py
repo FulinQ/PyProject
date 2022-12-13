@@ -1,5 +1,7 @@
 import os
 from datetime import date
+import numpy as np
+import matplotlib.pyplot as mp
 
 class Product:
   def __init__(self, pr_id, pr_name, pr_cost, pr_price, pr_stock):
@@ -81,7 +83,6 @@ except:
 fi.close()
 
 
-os.chdir('/Users/fulinq/Documents/KMITL/Y1/T1/IntroToProgramming/PyProject/')
 customer = {}
 try:
   fi = open('customer.txt', 'r')
@@ -101,7 +102,66 @@ except:
   print('Customer\'s Data Error')
 fi.close()
 
-print(date.today())
+def get_year():
+  global x, y
+  x = date.today()
+  print()
+  while True:
+    y = input('Enter year : ')
+    if y == 'q':
+      y = None
+      return 'q'
+    try:
+      y = int(y)
+    except:
+      print('Year must be 4 digit integer')
+      continue
+    if 2022 <= y <= int(x.year):
+      y = str(y)
+      return y
+    else:
+      print('Year must be 4 digit integer')
+
+def get_month():
+  global x, m, mon
+  x = date.today()
+  mon = {'01':32, '02':29, '03':32, '04':31, '05':32, '06':31, '07':32, '08':32, '09':31, '10':32, '11':31, '12':32}
+  while True:
+      m = input('Enter month(2 digits e.g.01) : ')
+      if m == 'q':
+        m = None
+        return None
+      elif m in mon:
+        m = str(m)
+        return m
+      else:
+        print('Error : month should be between 01-12')
+        continue
+      
+def consumer_update():
+  global customer
+  fi = open('customer.txt', 'w')
+  cu = sorted(customer.items())
+  for i in cu:
+    data = str(i[0]) + ' '
+    fi.write(data)
+    data = str(i[1]) + '\n'
+    fi.write(data)
+  fi.close()
+
+def product_update():
+  global pr_dict
+  fi = open('product.txt', 'w')
+  for i in range(1, pr_count):
+    fi.write(str(pr_dict[i]['id'])+' ')
+    fi.write(str(pr_dict[i]['name'])+' ')
+    fi.write(str(pr_dict[i]['cost'])+' ')
+    fi.write(str(pr_dict[i]['price'])+' ')
+    fi.write(str(pr_dict[i]['stock'])+'\n')
+  fi.close()
+
+
+print('\nToday\'s date :', date.today())
 # print(customer)
 # """ Check that dictionary is working """
 
@@ -115,25 +175,28 @@ print(date.today())
 
 while True:
   print()
-  command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name : \nsale : create order \n')
-  #Quit command
+  command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name\nadd : add product\'s stock\nsale : create order \n')
+#Quit command
   if command == 'q':
+    product_update()
+    consumer_update()
+    print('Data saved')
     break
-  #Find the available stocks with product's id
+#Find the available stocks with product's id
   elif command == 'sid':
     product = pr_database.findid_pr(int(input()))
     if product is not None:
       print(product.pr_name, product.get_available(), 'in stock')
     else:
       print('Invalid product ID')
-  #Find the available stocks with product's id
+#Find the available stocks with product's id
   elif command == 'sna':
     product = pr_database.findna_pr(input())
     if product is not None:
       print(product.pr_name, product.get_available(), 'in stock')
     else:
       print('Invalid product ID')
-#   #Sale function
+#Sale function
   elif command == 'sale':
     order = []
     cus = str(input('Customer name : '))
@@ -155,94 +218,327 @@ while True:
       o_pr = input('Enter product id : ')
 
       if o_pr == 'finish':
-        print()
-        print('Final Bill :', cus)
-        for i in order:
-          product_o = pr_database.findna_pr(i[0])
-          print(product_o.pr_name, end = ' ')
-          print(i[1], end = ' ')
-          print(product_o.pr_price*i[1], 'Baht')
-        revenue = sum
-        print('Total :', sum)
-        cash = int(input('Enter cash : '))
-        print('Customer pays ;', cash, 'Baht')
-        change = cash - sum
-        print('Change :', change)
-        profit = 0
-        cost = 0
-        for i in order:
-          # print(i)
-          product = pr_database.findna_pr(i[0])
-          if product is not None:
-            product.de_stock(int(i[1]))
-            pi = product.pr_price - product.pr_cost
-            pi *= int(i[1])
-            cost = product.pr_cost*int(i[1])
-            profit += pi
-        print('Profit :', profit)
-        name = cus
-        print(customer['QQ'])
-        customer[name] = customer.get(name,0) + 1
-        print(customer['QQ'])
-        fi = open('sale_history.txt', 'a')
-        x = date.today()
-        data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+ str(revenue)+' '+str(cost)+' '+str(profit)+'\n'
-        print(data)
-        fi.write(data)
-        fi.close()
-        break
+        while True:
+          print()
+          print('Final Bill :', cus)
+          for i in order:
+            product_o = pr_database.findna_pr(i[0])
+            print(product_o.pr_name, end = ' ')
+            print(i[1], end = ' ')
+            print(product_o.pr_price*i[1], 'Baht')
+          revenue = sum
+          print('Total :', sum)
+          cash = int(input('Enter cash : '))
+          if cash < revenue:
+            print('Must pay more than the total price.')
+            continue
+          else:
+            print('Customer pays :', cash, 'Baht')
+            change = cash - sum
+            print('Change :', change)
+            profit = 0
+            cost = 0
+            x = date.today()
+            fi = open('sold.txt', 'a')
+            for i in order:
+              # print(i)
+              product = pr_database.findna_pr(i[0])
+              if product is not None:
+                product.de_stock(int(i[1]))
+                pi = product.pr_price - product.pr_cost
+                pi *= int(i[1])
+                cost = product.pr_cost*int(i[1])
+                profit += pi
+                data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+str(product.pr_name)+' '+str(i[1])+' '+str(cost)+' '+str(pi)+' '+'\n'
+                fi.write(data)
+            fi.close()
+            print('Profit :', profit)
+
+            fi = open('basket.txt', 'a')
+            data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(cus)+' '+str(len(order))+'\n'
+            fi.write(data)
+            fi.close()
+            product_update()
+            order = []
+            name = cus
+            customer[name] = customer.get(name,0) + 1
+            consumer_update()
+            break
 
       elif o_pr == 'clear':
         order = []
         break
-      try: 
-        product = pr_database.findid_pr(int(o_pr))
-        if product is not None:
-          s = None
-          id_o = None
-          for i in range(1,pr_count):
-            if pr_dict[i]['id'] == product.pr_id:
-              a = pr_dict[i]['stock']
-              s = a
-              id_o = i
-              break
-            else:
+      else:
+        try: 
+          product = pr_database.findid_pr(int(o_pr))
+          if product is not None:
+            s = None
+            id_o = None
+            for i in range(1,pr_count):
+              if pr_dict[i]['id'] == product.pr_id:
+                a = pr_dict[i]['stock']
+                s = a
+                id_o = i
+                break
+              else:
+                continue
+            print(product.pr_name, s, 'in stock')
+            try:
+              o_qu = int(input('Enter quantity : '))
+            except:
+              print('Quantity must be an integer. Please enter product ID again.')
               continue
-          print(product.pr_name, s, 'in stock')
-          try:
-            o_qu = int(input('Enter quantity : '))
-          except:
-            print('Quantity must be an integer. Please enter product ID again.')
-            continue
-          if o_qu < s:
-            list_o = [product.pr_name, o_qu]
-            # print(pr_dict[id_o]['stock'])
-            pr_dict[id_o]['stock'] = s - o_qu
-            # print(pr_dict[id_o]['stock'])
-            order.append(list_o)
-            continue
-          elif o_qu <= 0:
-            print('Error: quantity cannot be zero or negative number. Enter product ID again')            
-            continue
-          else:
-            print('Error enter product ID again')
-            continue
-      except:
-        print('Error: Enter product ID again.')
-        continue
-
-  #add stock
+            if o_qu <= s:
+              list_o = [product.pr_name, o_qu]
+              # print(pr_dict[id_o]['stock'])
+              pr_dict[id_o]['stock'] = s - o_qu
+              # print(pr_dict[id_o]['stock'])
+              order.append(list_o)
+              continue
+            elif o_qu <= 0:
+              print('Error: quantity cannot be zero or negative number. Enter product ID again')            
+              continue
+            else:
+              print('Error: enter product ID again')
+              continue
+        except:
+          print('Error: Enter product ID again.')
+          continue
+#add stock
   elif command == 'add':
     i_pr = (int(input('Enter product ID : ')))
     product = pr_database.findid_pr(i_pr)
+    fi = open('supply_up.txt', 'a')
+    x = date.today()
     if product is not None:
       print('Now, there are', product.get_available(),product.pr_name , 'in stock')
-      amount = int(input('Adding amount : '))
+      try:
+        amount = int(input('Adding amount : '))
+      except:
+        print('Error: amount should be an integer. Pease try again.')
+        continue
       product.add_stock(amount)
       for i in range(1, pr_count):
-        if pr_dict[i]['id'] == i_pr.pr_id:
+        if pr_dict[i]['id'] == product.pr_id:
           pr_dict[i]['stock'] += amount
-
-
+          cost = pr_dict[i]['cost']*amount
+          data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(pr_dict[i]['id'])+' '+ str(pr_dict[i]['name'])+' '+str(cost)+'\n'
+          fi.write(data)
+          fi.close()
+          product_update()
+          break
+        else: 
+          continue
     else:
-      print('Invalid product ID')
+      print('Product not found. New product?(y/n)')
+      yn = input()
+      if yn == 'n':
+        fi.close()
+        print('Quit adding stock command')
+      elif yn == 'y':
+        print()
+        print('Please product\'s data')
+        id = int(input('Enter Product ID : '))
+        name = input('Enter Product Name : ')
+        cost = int(input('Enter Product Cost : '))
+        price = int(input('Enter Product Price : '))
+        stock = int(input('Enter Product Stock : '))
+        product = Product(id, name, cost, price, stock)
+        pr_database.add(product)
+        pr_item = {}
+        pr_item['id'] = id
+        pr_item['name'] = name
+        pr_item['cost'] = cost
+        pr_item['price'] = price
+        pr_item['stock'] = stock
+        pr_dict[pr_count] = pr_item
+        pr_count += 1
+        product_update()
+        cost = cost*stock
+        data = str(x.year)+' '+str(x.month)+' '+str(x.day)+' '+str(id)+' '+ str(name)+' '+str(cost)+'\n'
+        fi.write(data)
+        fi.close()
+      else:
+        fi.close()
+        print('Input is not match, return to Home.')
+#graph
+  elif command == 'rgraph':
+    rev = {}
+    co = {}
+    prof = {}
+    print()
+    y = get_year()
+    if y == None:
+      continue
+    m = get_month()
+    if m == None:
+      continue
+    k = mon[m]
+    one = []
+    for i in range(1,k):
+      j = str(i)
+      if len(j) == 1:
+        j = str(0)+j
+      else:
+        j = str(j)
+      rev[j] = rev.get(j, 0)
+      co[j] = co.get(j, 0)
+      prof[j] = prof.get(j, 0)
+      d_one = i
+      one.append(d_one)
+    fi = open('sold.txt', 'r')
+    print('Year :',y ,', Month :',m)
+    while True:
+      line = fi.readline()
+      if line == '':
+        break
+      else:
+        line = line.strip()
+        line = line.split()
+        if line[0] == y and line[1] == m:
+          d = line[2]
+          # print(d)
+          p = int(line[-1])
+          c = int(line[-2])
+          r = p+c
+          rev[d] = rev.get(d, 0) + r
+          co[d] = co.get(d, 0) + c
+          prof[d] = prof.get(d, 0) + p
+        else:
+          continue
+    fi.close()
+    # print(rev)
+    # print(co)
+    # print(prof)
+    rl = list(rev.values())
+    cl = list(co.values())
+    pl = list(prof.values())
+    # print(rl)
+    # print(cl)
+    # print(pl)
+    # print(one)
+    mp.figure(figsize = (20,6))
+    mp.axes(xticks=one)
+    oa = np.array(one)
+    ra = np.array(rl)
+    ca = np.array(cl)
+    pa = np.array(pl)
+    mp.bar(oa-0.2,ca,width=0.2,label='cost',align='center')
+    mp.bar(oa,ra,width=0.2,label='revenue',align='center')
+    mp.bar(oa+0.2,pa,width=0.2,label='profit',align='center')
+    mp.title('Cost, Revenue, Profit for sale')
+    mp.ylabel('Baht')
+    mp.xlabel('Date')
+    mp.legend(loc='best')
+    mp.show()
+    continue
+
+#Sold product pie chart
+  elif command == 'prpie':
+    x = date.today()
+    print()
+    y = get_year()
+    if y == None:
+      continue
+    m = get_month()
+    if m == None:
+      continue
+    fi = open('sold.txt', 'r')
+    print('Year :',y ,', Month :',m)
+    sold_pr= {}
+    while True:
+      line = fi.readline()
+      if line == '':
+        break
+      else:
+        line = line.strip()
+        line = line.split()
+        if line[0] == y and line[1] == m:
+          sold_na = line[-4]
+          sold_nu = int(line[-3])
+          sold_pr[sold_na] = sold_pr.get(sold_na, 0) + sold_nu
+        else:
+          continue
+    fi.close()
+    # print(sold_pr)
+    sold_pr = sorted(sold_pr.items(), key = lambda x: x[1], reverse = True)
+    sold_k = []
+    for i in sold_pr:
+      data = i[0]+' : '+str(i[1])
+      sold_k.append(data)
+    sold_pr = dict(sold_pr)
+    sold_v = list(sold_pr.values())
+
+    mp.figure(figsize = (10,5))
+    mp.title('sold product proportion')
+    mp.pie(sold_v, labels = sold_k, autopct = '%.2f%%', startangle = 90)
+    # mp.legend(loc = 'upper right')
+    mp.show()
+    continue
+
+#basket size:
+  elif command == 'bas':
+    tc = input('All or enter customer name : ')
+    tc = tc.upper()
+    if tc == 'q':
+      continue
+    elif tc == 'ALL':
+      print()
+      y = get_year()
+      if y == None:
+        continue
+      m = get_month()
+      if m == None:
+        continue
+      fi = open('basket.txt', 'r')
+      avg_bas = 0
+      devide = 0
+      while True:
+        line = fi.readline()
+        if line == '':
+          break
+        else:
+          line = line.strip()
+          line = line.split()
+          if line[0] == y and line[1] == m:
+            avg_bas += int(line[-1])
+            devide += 1
+          else:
+            continue
+      print()
+      print('total order :', devide)
+      print('Average basket size')
+      print('actual :',avg_bas/devide,)
+      print('realistic :', int(avg_bas/devide))
+
+    elif tc in customer:
+      print()
+      y = get_year()
+      if y == None:
+        continue
+      m = get_month()
+      if m == None:
+        continue
+      fi = open('basket.txt', 'r')
+      avg_bas = 0
+      devide = 0
+      while True:
+        line = fi.readline()
+        if line == '':
+          break
+        else:
+          line = line.strip()
+          line = line.split()
+          if line[0] == y and line[1] == m and line[3] == tc:
+            avg_bas += int(line[-1])
+            devide += 1
+          else:
+            continue
+      print()
+      print('Customer :', tc)
+      print('total order :', devide)
+      print('Average basket size')
+      print('actual :',avg_bas/devide,)
+      print('realistic :', int(avg_bas/devide))
+    else:
+      print('Customer is not in customer list.')

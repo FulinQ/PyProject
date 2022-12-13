@@ -102,6 +102,42 @@ except:
   print('Customer\'s Data Error')
 fi.close()
 
+def get_year():
+  global x, y
+  x = date.today()
+  print()
+  while True:
+    y = input('Enter year : ')
+    if y == 'q':
+      y = None
+      return 'q'
+    try:
+      y = int(y)
+    except:
+      print('Year must be 4 digit integer')
+      continue
+    if 2022 <= y <= int(x.year):
+      y = str(y)
+      return y
+    else:
+      print('Year must be 4 digit integer')
+
+def get_month():
+  global x, m, mon
+  x = date.today()
+  mon = {'01':32, '02':29, '03':32, '04':31, '05':32, '06':31, '07':32, '08':32, '09':31, '10':32, '11':31, '12':32}
+  while True:
+      m = input('Enter month(2 digits e.g.01) : ')
+      if m == 'q':
+        m = None
+        return None
+      elif m in mon:
+        m = str(m)
+        return m
+      else:
+        print('Error : month should be between 01-12')
+        continue
+      
 def consumer_update():
   global customer
   fi = open('customer.txt', 'w')
@@ -138,8 +174,25 @@ print('\nToday\'s date :', date.today())
 #   print(pr_dict[i])
 
 while True:
-  print()
-  command = input('Enter command : \nsid : check product\'s stock by id \nsna : check product\'s stock by name\nadd : add product\'s stock\nsale : create order \n')
+  con = input('Continue? y/n : ')
+  if con == 'y':
+    print()
+    print('Command list')
+    print('sid : check product\'s stock by id')
+    print('sna : check product\'s stock by name')
+    print('rgraph : cost, revenue, profit for sale on each day')
+    print('prpie : sold product proportion')
+    print('bas : basket size')
+    print('topc : top customer of the month')
+    print('topp : top product of the month')
+    print('add : add product\'s stock')
+    print('sale : create order')
+  else:
+    product_update()
+    consumer_update()
+    print('Data saved')
+    break
+  command = input('Enter command : ')
 #Quit command
   if command == 'q':
     product_update()
@@ -327,46 +380,16 @@ while True:
         print('Input is not match, return to Home.')
 #graph
   elif command == 'rgraph':
-    x = date.today()
-    mon = {'01':32, '02':29, '03':32, '04':31, '05':32, '06':31, '07':32, '08':32, '09':31, '10':32, '11':31, '12':32}
     rev = {}
     co = {}
     prof = {}
     print()
-    while True:
-      y = input('Enter year : ')
-      print(int(x.year))
-      if y == 'q':
-        y = None
-        break
-      try:
-        y = int(y)
-      except:
-        print('Year must be 4 digit integer')
-        continue
-      if 2022 <= y <= int(x.year):
-        y = str(y)
-        break
-      else:
-        print('Year must be at least 2022.')
-        y = None
-        continue
+    y = get_year()
     if y == None:
-      break
-    while True:
-      m = input('Enter month(2 digits e.g.01) : ')
-      if m == 'q':
-        m = None
-        break
-      else:
-        if m in mon:
-          m = str(m)
-          break
-        else:
-          print('Error : month should be between 01-12')
-          continue
+      continue
+    m = get_month()
     if m == None:
-      break
+      continue
     k = mon[m]
     one = []
     for i in range(1,k):
@@ -397,7 +420,7 @@ while True:
           r = p+c
           rev[d] = rev.get(d, 0) + r
           co[d] = co.get(d, 0) + c
-          prof[d] = prof.get(d, 0) +p
+          prof[d] = prof.get(d, 0) + p
         else:
           continue
     fi.close()
@@ -420,54 +443,21 @@ while True:
     mp.bar(oa-0.2,ca,width=0.2,label='cost',align='center')
     mp.bar(oa,ra,width=0.2,label='revenue',align='center')
     mp.bar(oa+0.2,pa,width=0.2,label='profit',align='center')
-    mp.title('dashboard')
+    mp.title('Cost, Revenue, Profit for sale')
     mp.ylabel('Baht')
     mp.xlabel('Date')
     mp.legend(loc='best')
     mp.show()
-
+    continue
 #Sold product pie chart
   elif command == 'prpie':
-    x = date.today()
-    mon = {'01':32, '02':29, '03':32, '04':31, '05':32, '06':31, '07':32, '08':32, '09':31, '10':32, '11':31, '12':32}
-    rev = {}
-    co = {}
-    prof = {}
     print()
-    while True:
-      y = input('Enter year : ')
-      print(int(x.year))
-      if y == 'q':
-        y = None
-        break
-      try:
-        y = int(y)
-      except:
-        print('Year must be 4 digit integer')
-        continue
-      if 2022 <= y <= int(x.year):
-        y = str(y)
-        break
-      else:
-        print('Year must be at least 2022.')
-        y = None
-        continue
+    y = get_year()
     if y == None:
-      break
-    while True:
-      m = input('Enter month(2 digits e.g.01) : ')
-      if m == 'q':
-        m = None
-        break
-      else:
-        if m in mon:
-          m = str(m)
-          break
-        else:
-          print('Error : month should be between 01-12')
-          continue
+      continue
+    m = get_month()
     if m == None:
-      break
+      continue
     fi = open('sold.txt', 'r')
     print('Year :',y ,', Month :',m)
     sold_pr= {}
@@ -485,13 +475,166 @@ while True:
         else:
           continue
     fi.close()
-    print(sold_pr)
+    # print(sold_pr)
     sold_pr = sorted(sold_pr.items(), key = lambda x: x[1], reverse = True)
+    sold_k = []
+    for i in sold_pr:
+      data = i[0]+' : '+str(i[1])
+      sold_k.append(data)
     sold_pr = dict(sold_pr)
-    sold_k = list(sold_pr.keys())
     sold_v = list(sold_pr.values())
 
     mp.figure(figsize = (10,5))
+    mp.title('sold product proportion')
     mp.pie(sold_v, labels = sold_k, autopct = '%.2f%%', startangle = 90)
     # mp.legend(loc = 'upper right')
     mp.show()
+    continue
+#basket size:
+  elif command == 'bas':
+    tc = input('All or enter customer name : ')
+    tc = tc.upper()
+    if tc == 'q':
+      continue
+    elif tc == 'ALL':
+      print()
+      y = get_year()
+      if y == None:
+        continue
+      m = get_month()
+      if m == None:
+        continue
+      fi = open('basket.txt', 'r')
+      avg_bas = 0
+      devide = 0
+      while True:
+        line = fi.readline()
+        if line == '':
+          break
+        else:
+          line = line.strip()
+          line = line.split()
+          if line[0] == y and line[1] == m:
+            avg_bas += int(line[-1])
+            devide += 1
+          else:
+            continue
+      fi.close()
+      print()
+      print('total order :', devide)
+      print('Average basket size')
+      print('actual :',avg_bas/devide,)
+      print('realistic :', int(avg_bas/devide))
+
+    elif tc in customer:
+      print()
+      y = get_year()
+      if y == None:
+        continue
+      m = get_month()
+      if m == None:
+        continue
+      fi = open('basket.txt', 'r')
+      avg_bas = 0
+      devide = 0
+      while True:
+        line = fi.readline()
+        if line == '':
+          break
+        else:
+          line = line.strip()
+          line = line.split()
+          if line[0] == y and line[1] == m and line[3] == tc:
+            avg_bas += int(line[-1])
+            devide += 1
+          else:
+            continue
+      fi.close()
+      print()
+      print('Customer :', tc)
+      print('total order :', devide)
+      print('Average basket size')
+      print('actual :',avg_bas/devide,)
+      print('realistic :', int(avg_bas/devide))
+    else:
+      print('Customer is not in customer list.')
+#Top customer
+  elif command == 'topc':
+    print()
+    y = get_year()
+    if y == None:
+      continue
+    m = get_month()
+    if m == None:
+      continue
+    fi = open('sold.txt', 'r')
+    print('Year :',y ,', Month :',m)
+    topc = {}
+    while True:
+      line = fi.readline()
+      if line == '':
+        break
+      else:
+        line = line.strip()
+        line = line.split()
+        if line[0] == y and line[1] == m:
+          ct = line[3]
+          pt = int(line[-2]) + int(line[-1])
+          topc[ct] = topc.get(ct, 0) + pt
+        else:
+          continue
+    fi.close()
+    topc = sorted(topc.items(), key = lambda x: x[1], reverse = True)
+    rt = topc[0][1]
+    # print(rt)
+    topc = dict(topc)
+    print()
+    print('Top customer')
+    # print(topc)
+    for i in topc:
+      if topc[i] == rt:
+        print('Customer name :', i)
+        print('Total revenue from', i,':', topc[i])
+        print()
+      else:
+        continue
+#Top product
+  elif command == 'topp':
+    print()
+    y = get_year()
+    if y == None:
+      continue
+    m = get_month()
+    if m == None:
+      continue
+    fi = open('sold.txt', 'r')
+    print('Year :',y ,', Month :',m)
+    topp = {}
+    while True:
+      line = fi.readline()
+      if line == '':
+        break
+      else:
+        line = line.strip()
+        line = line.split()
+        if line[0] == y and line[1] == m:
+          tp = line[4]
+          tpa = int(line[-3])
+          topp[tp] = topp.get(tp, 0) + tpa
+        else:
+          continue
+    fi.close()
+    topp = sorted(topp.items(), key = lambda x: x[1], reverse = True)
+    ts = topp[0][1]
+    # print(ts)
+    topp = dict(topp)
+    # print(topp)
+    print()
+    print('Popular product')
+    for i in topp:
+      if topp[i] == ts:
+        print('Product name :', i)
+        print('Total amount sold :', i,':', topp[i])
+        print()
+      else:
+        continue
