@@ -1,4 +1,4 @@
-101 putto_ss 100 219 10
+101 putto_ss 100 219 6
 102 putto_s 100 219 10
 103 putto_m 100 219 10
 104 putto_l 100 219 8
@@ -6,7 +6,7 @@
 106 putto_xxl 100 219 10
 107 putto_xxxl 100 219 9
 201 sati_ss 100 219 10
-202 sati_s 100 219 10
+202 sati_s 100 219 7
 203 sati_m 100 219 10
 204 sati_l 100 219 10
 205 sati_xl 100 219 10
