@@ -354,7 +354,7 @@ while True:
     if y == None:
       break
     while True:
-      m = input('Enter month : ')
+      m = input('Enter month(2 digits e.g.01) : ')
       if m == 'q':
         m = None
         break
@@ -363,6 +363,7 @@ while True:
           m = str(m)
           break
         else:
+          print('Error : month should be between 01-12')
           continue
     if m == None:
       break
@@ -399,6 +400,7 @@ while True:
           prof[d] = prof.get(d, 0) +p
         else:
           continue
+    fi.close()
     # print(rev)
     # print(co)
     # print(prof)
@@ -422,4 +424,74 @@ while True:
     mp.ylabel('Baht')
     mp.xlabel('Date')
     mp.legend(loc='best')
+    mp.show()
+
+#Sold product pie chart
+  elif command == 'prpie':
+    x = date.today()
+    mon = {'01':32, '02':29, '03':32, '04':31, '05':32, '06':31, '07':32, '08':32, '09':31, '10':32, '11':31, '12':32}
+    rev = {}
+    co = {}
+    prof = {}
+    print()
+    while True:
+      y = input('Enter year : ')
+      print(int(x.year))
+      if y == 'q':
+        y = None
+        break
+      try:
+        y = int(y)
+      except:
+        print('Year must be 4 digit integer')
+        continue
+      if 2022 <= y <= int(x.year):
+        y = str(y)
+        break
+      else:
+        print('Year must be at least 2022.')
+        y = None
+        continue
+    if y == None:
+      break
+    while True:
+      m = input('Enter month(2 digits e.g.01) : ')
+      if m == 'q':
+        m = None
+        break
+      else:
+        if m in mon:
+          m = str(m)
+          break
+        else:
+          print('Error : month should be between 01-12')
+          continue
+    if m == None:
+      break
+    fi = open('sold.txt', 'r')
+    print('Year :',y ,', Month :',m)
+    sold_pr= {}
+    while True:
+      line = fi.readline()
+      if line == '':
+        break
+      else:
+        line = line.strip()
+        line = line.split()
+        if line[0] == y and line[1] == m:
+          sold_na = line[-4]
+          sold_nu = int(line[-3])
+          sold_pr[sold_na] = sold_pr.get(sold_na, 0) + sold_nu
+        else:
+          continue
+    fi.close()
+    print(sold_pr)
+    sold_pr = sorted(sold_pr.items(), key = lambda x: x[1], reverse = True)
+    sold_pr = dict(sold_pr)
+    sold_k = list(sold_pr.keys())
+    sold_v = list(sold_pr.values())
+
+    mp.figure(figsize = (10,5))
+    mp.pie(sold_v, labels = sold_k, autopct = '%.2f%%', startangle = 90)
+    # mp.legend(loc = 'upper right')
     mp.show()
